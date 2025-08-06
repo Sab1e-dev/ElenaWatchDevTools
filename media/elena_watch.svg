@@ -1,0 +1,10 @@
+<svg width="200" height="260" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+  <rect fill="none" height="143.75" id="svg_1" rx="35" ry="35" stroke="currentColor" stroke-width="16" width="144.17" x="28" y="60"/>
+  <text fill="currentColor" font-family="Cursive, Arial, sans-serif" font-size="145" font-weight="bold" id="svg_2" text-anchor="middle" x="101.25" y="184.17">E</text>
+  <rect fill="currentColor" height="18" id="svg_3" rx="6" ry="6" width="30" x="50" y="40"/>
+  <rect fill="currentColor" height="18" id="svg_4" rx="6" ry="6" width="30" x="120" y="40"/>
+  <rect fill="currentColor" height="18" id="svg_5" rx="6" ry="6" width="30" x="50" y="205"/>
+  <rect fill="currentColor" height="18" id="svg_6" rx="6" ry="6" width="30" x="120" y="205"/>
+  <rect fill="currentColor" height="23.5" id="svg_7" rx="3" ry="3" stroke-width="0" width="11.56" x="175.45" y="84.69"/>
+  <rect fill="currentColor" height="47.67" id="svg_8" rx="3" ry="3" width="11.56" x="172.83" y="125.61"/>
+</svg>
