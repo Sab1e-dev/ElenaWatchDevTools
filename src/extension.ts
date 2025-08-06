@@ -43,8 +43,8 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.StatusBarAlignment.Left,
         101
     )
-    sendFileStatusBarItem.text = '$(file-symlink-file) 发送当前文件'
-    sendFileStatusBarItem.tooltip = '通过YMODEM协议发送当前文件到设备';
+    sendFileStatusBarItem.text = '$(file-symlink-file) 发送文件'
+    sendFileStatusBarItem.tooltip = '使用YMODEM协议通过串口发送文件到设备';
     sendFileStatusBarItem.command = 'ewdt.serial.sendFile';
 
     // 连接事件：修改按钮为断开

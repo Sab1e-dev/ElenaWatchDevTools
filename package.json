@@ -16,30 +16,21 @@
   "contributes": {
     "commands": [
       {
-        "command": "ewdt.serial.connect",
-        "title": "Connect to Serial Port",
-        "category": "EWDT > Serial Tool"
+        "command": "ewdt.serial.createTerminal",
+        "title": "Create Serial Terminal",
+        "category": "EWDT > Serial Tools"
       },
       {
-        "command": "ewdt.serial.disconnect",
-        "title": "Disconnect Serial Port",
-        "category": "EWDT > Serial Tool",
+        "command": "ewdt.serial.disconnectTerminal",
+        "title": "Disconnect Serial Port & Terminal",
+        "category": "EWDT > Serial Tools",
         "icon": "$(disconnect)"
       },
       {
-        "command": "ewdt.serial.send",
-        "title": "Send Data via Serial",
-        "category": "EWDT > Serial Tool"
-      },
-      {
-        "command": "ewdt.serial.refresh",
-        "title": "Refresh Ports",
-        "category": "EWDT > Serial Tool",
-        "icon": "$(refresh)"
-      },
-      {
-        "command": "ymodem.sendFile",
-        "title": "Send file via YMODEM protocol"
+        "command": "ewdt.serial.sendFile",
+        "title": "Send File to Serial Port via YMODEM Protocol",
+        "category": "EWDT > Serial Tools",
+        "icon": "$(disconnect)"
       }
     ],
     "icons": {
