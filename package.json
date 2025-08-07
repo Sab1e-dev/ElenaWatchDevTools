@@ -45,6 +45,11 @@
     "configuration": {
       "title": "ElenaWatchDevTools",
       "properties": {
+        "ewdt.debugMode": {
+          "type": "boolean",
+          "default": "false",
+          "description": "Debug Mode"
+        },
         "ewdt.terminalTXColor": {
           "type": "string",
           "default": "default",

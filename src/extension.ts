@@ -5,11 +5,11 @@ import { transfer, SerialPortLike } from './ymodem';
 import * as path from 'path';
 
 let serialPort: SerialPort | null = null;
-export let outputChannel: vscode.OutputChannel;
+export let outputChannel: SerialTerminal;
 let connectStatusBarItem: vscode.StatusBarItem;
 let sendFileStatusBarItem: vscode.StatusBarItem;
 let resetBoardStatusBarItem: vscode.StatusBarItem;
-
+export let debugMode:boolean;
 
 function createSerialPortWrapper(port: SerialPort): SerialPortLike {
     return {
@@ -34,12 +34,13 @@ function updateConfig(){
     if(config.get('terminalTXColor') !== undefined){
         SerialTerminal.set({ terminalTXColor: config.get('terminalTXColor') });
     }
+    if(config.get('debugMode') !== undefined){
+        debugMode = config.get('debugMode') ?? false;
+    }
 }
 
 export function activate(context: vscode.ExtensionContext) {
-    outputChannel = vscode.window.createOutputChannel('Serial Port Monitor');
-    context.subscriptions.push(outputChannel);
-
+    updateConfig();
     // 状态栏按钮初始化
     connectStatusBarItem = vscode.window.createStatusBarItem(
         vscode.StatusBarAlignment.Left,
@@ -195,12 +196,12 @@ export function activate(context: vscode.ExtensionContext) {
             const filePath = fileUri.fsPath;
             const fileData = await vscode.workspace.fs.readFile(fileUri);
 
-            outputChannel.show();
-            outputChannel.appendLine(`准备发送文件: ${filePath}`);
+            SerialTerminal.show();
+            SerialTerminal.appendLine(`准备发送文件: ${filePath}`);
 
             const serialWrapper = createSerialPortWrapper(serialPort);
 
-            const logger = (msg: string) => outputChannel.appendLine(msg);
+            const logger = (msg: string) => SerialTerminal.appendLine(msg);
             const onProgress = ([current, total]: [number, number]) => {
                 vscode.window.setStatusBarMessage(`YMODEM 进度: ${current}/${total} 包`, 2000);
             };
@@ -210,15 +211,16 @@ export function activate(context: vscode.ExtensionContext) {
                 path.basename(filePath),
                 Buffer.from(fileData),
                 onProgress,
-                logger
+                SerialTerminal.appendLine
             );
 
             vscode.window.showInformationMessage('文件发送成功！');
         } catch (err) {
             const msg = err instanceof Error ? err.message : String(err);
-            outputChannel.appendLine(`[ERROR] ${msg}`);
+            SerialTerminal.appendLine(`[ERROR] ${msg}`);
             vscode.window.showErrorMessage(`文件发送失败: ${msg}`);
         }
+        SerialTerminal.show();
     }
 
     const resetBoardHandler = async () => {

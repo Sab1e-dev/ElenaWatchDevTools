@@ -1,4 +1,5 @@
-import { outputChannel } from "./extension";
+import { debugMode } from "./extension";
+import { SerialTerminal } from "./SerialTerminalProvider";
 
 // YMODEM Constants
 const SOH = 0x01; // Start of 128-byte packet
@@ -11,8 +12,6 @@ const ASCII_C = 0x43; // ASCII 'C'
 
 const PACKET_SIZE_128 = 128;
 const PACKET_SIZE_1024 = 1024;
-
-
 
 // Type definitions
 export interface SerialPortLike {
@@ -113,7 +112,7 @@ async function waitChar(serial: SerialPortLike, valid: number[], timeout = 10000
         const dataHandler = (data: Buffer) => {
             // 将新收到的数据添加到全局接收缓冲区
             receiveBuffer = Buffer.concat([receiveBuffer, data]);
-            outputChannel.append(`BUFFER:${receiveBuffer.toString("hex")}`)
+
             // 尝试从缓冲区中提取需要的字符
             const result = extractCharFromBuffer(valid);
             if (result.found) {
@@ -166,8 +165,13 @@ export async function transfer(
     const packets = splitFileToPackets(buffer);
     const totalBytes = buffer.length;
     let writtenBytes = 0;
-
-    const log = (msg: string) => logger(`[YMODEM] ${msg}`);
+    let log;
+    if(debugMode){
+        log = (msg: string) => logger(`[YMODEM] ${msg}`);
+    }else{
+        log = (msg: string) => null;
+    }
+    
 
     // 清除旧监听
     clearDataListeners(serial);

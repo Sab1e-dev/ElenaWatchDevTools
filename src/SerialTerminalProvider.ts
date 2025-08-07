@@ -134,8 +134,15 @@ export class SerialTerminal {
 
         this.terminal.show();
     }
-
-
+    public static show(): void {
+        SerialTerminal.terminal?.show();
+    }
+    public static appendLine(value: string): void {
+        SerialTerminal.emitter?.fire(`\r\n${value}`);
+    }
+    public static append(value: string): void {
+        SerialTerminal.emitter?.fire(`${value}`);
+    }
     private static connectSerialPort(portPath: string, baudRate: number): void {
         this.serialPort = new SerialPort({ path: portPath, baudRate });
 
