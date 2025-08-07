@@ -9,7 +9,7 @@ export let outputChannel: vscode.OutputChannel;
 let connectStatusBarItem: vscode.StatusBarItem;
 let sendFileStatusBarItem: vscode.StatusBarItem;
 let resetBoardStatusBarItem: vscode.StatusBarItem;
-const config = vscode.workspace.getConfiguration('ewdt');
+
 
 function createSerialPortWrapper(port: SerialPort): SerialPortLike {
     return {
@@ -27,8 +27,12 @@ function createSerialPortWrapper(port: SerialPort): SerialPortLike {
 }
 
 function updateConfig(){
-    if(config.showRX !== undefined) {
-        SerialTerminal.set({ showRX: config.showRX });
+    const config = vscode.workspace.getConfiguration('ewdt');
+    if(config.get('terminalRXColor') !== undefined) {
+        SerialTerminal.set({ terminalRXColor: config.get('terminalRXColor') });
+    }
+    if(config.get('terminalTXColor') !== undefined){
+        SerialTerminal.set({ terminalTXColor: config.get('terminalTXColor') });
     }
 }
 

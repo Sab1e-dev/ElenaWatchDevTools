@@ -45,10 +45,53 @@
     "configuration": {
       "title": "ElenaWatchDevTools",
       "properties": {
-        "ewdt.showRX": {
-          "type": "boolean",
-          "default": false,
-          "description": "是否在串口终端显示\"[12:00:00] [RX]\""
+        "ewdt.terminalTXColor": {
+          "type": "string",
+          "default": "default",
+          "description": "Terminal TX text color",
+          "enum": [
+            "default",
+            "black",
+            "red",
+            "green",
+            "yellow",
+            "blue",
+            "magenta",
+            "cyan",
+            "white",
+            "gray",
+            "brightRed",
+            "brightGreen",
+            "brightYellow",
+            "brightBlue",
+            "brightMagenta",
+            "brightCyan",
+            "brightWhite"
+          ]
+        },
+        "ewdt.terminalRXColor": {
+          "type": "string",
+          "default": "default",
+          "description": "Terminal RX text color",
+          "enum": [
+            "default",
+            "black",
+            "red",
+            "green",
+            "yellow",
+            "blue",
+            "magenta",
+            "cyan",
+            "white",
+            "gray",
+            "brightRed",
+            "brightGreen",
+            "brightYellow",
+            "brightBlue",
+            "brightMagenta",
+            "brightCyan",
+            "brightWhite"
+          ]
         }
       }
     }

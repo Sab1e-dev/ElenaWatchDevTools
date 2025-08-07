@@ -1,3 +1,5 @@
+import { outputChannel } from "./extension";
+
 // YMODEM Constants
 const SOH = 0x01; // Start of 128-byte packet
 const STX = 0x02; // Start of 1024-byte packet
@@ -5,10 +7,12 @@ const EOT = 0x04; // End of transmission
 const ACK = 0x06;
 const NAK = 0x15;
 const CA = 0x18;
-const CRC16 = 0x43; // ASCII 'C'
+const ASCII_C = 0x43; // ASCII 'C'
 
 const PACKET_SIZE_128 = 128;
 const PACKET_SIZE_1024 = 1024;
+
+
 
 // Type definitions
 export interface SerialPortLike {
@@ -26,6 +30,9 @@ interface TransferResult {
     totalBytes: number;
     writtenBytes: number;
 }
+
+// 全局接收缓冲区
+let receiveBuffer: Buffer = Buffer.alloc(0);
 
 // Utils
 function noop() { }
@@ -74,23 +81,50 @@ function buildHeaderPacket(filename: string, filesize: number): Buffer {
     return Buffer.concat([header, payload, footer]);
 }
 
-function waitChar(serial: SerialPortLike, valid: number[], timeout = 10000): Promise<number> {
+// 从接收缓冲区中提取指定的字符，并移除该字符及其之前的所有数据
+function extractCharFromBuffer(valid: number[]): { char: number | null, found: boolean } {
+    for (let i = 0; i < receiveBuffer.length; i++) {
+        const byte = receiveBuffer[i];
+        if (valid.includes(byte)) {
+            // 找到需要的字符，移除该字符及其之前的所有数据
+            const foundChar = receiveBuffer[i];
+            receiveBuffer = receiveBuffer.slice(i + 1);
+            return { char: foundChar, found: true };
+        }
+    }
+    return { char: null, found: false };
+}
+
+// 等待指定的字符，从全局接收缓冲区中查找
+async function waitChar(serial: SerialPortLike, valid: number[], timeout = 10000): Promise<number> {
     return new Promise((resolve, reject) => {
+        // 首先检查缓冲区中是否已有目标字符
+        const initialCheck = extractCharFromBuffer(valid);
+        if (initialCheck.found) {
+            return resolve(initialCheck.char as number);
+        }
+
         const timer = setTimeout(() => {
-            serial.removeListener("data", handler);
+            serial.removeListener("data", dataHandler);
             reject(new Error("Timeout waiting for receiver"));
         }, timeout);
 
-        const handler = (data: Buffer) => {
-            const byte = data[0];
-            if (valid.includes(byte)) {
+        // 定义数据接收处理函数
+        const dataHandler = (data: Buffer) => {
+            // 将新收到的数据添加到全局接收缓冲区
+            receiveBuffer = Buffer.concat([receiveBuffer, data]);
+            outputChannel.append(`BUFFER:${receiveBuffer.toString("hex")}`)
+            // 尝试从缓冲区中提取需要的字符
+            const result = extractCharFromBuffer(valid);
+            if (result.found) {
                 clearTimeout(timer);
-                serial.removeListener("data", handler);
-                resolve(byte);
+                serial.removeListener("data", dataHandler);
+                resolve(result.char as number);
             }
         };
 
-        serial.on("data", handler);
+        // 监听数据事件
+        serial.on("data", dataHandler);
     });
 }
 
@@ -111,6 +145,15 @@ function splitFileToPackets(buffer: Buffer): Buffer[] {
     return packets;
 }
 
+// 清除所有数据监听器
+function clearDataListeners(serial: SerialPortLike) {
+    if (typeof (serial as any).removeAllListeners === "function") {
+        (serial as any).removeAllListeners("data");
+    } else {
+        // 无法安全移除所有监听器，只能跳过
+    }
+}
+
 // Main transfer function
 export async function transfer(
     serial: SerialPortLike,
@@ -127,18 +170,16 @@ export async function transfer(
     const log = (msg: string) => logger(`[YMODEM] ${msg}`);
 
     // 清除旧监听
-    if (typeof (serial as any).removeAllListeners === "function") {
-        (serial as any).removeAllListeners("data");
-    }
+    clearDataListeners(serial);
 
     log("[等待] 字符C");
-    await waitChar(serial, [CRC16]);
+    await waitChar(serial, [ASCII_C]);
     log("[发送] 第一帧");
     await serial.write(buildHeaderPacket(filename, totalBytes));
     log("[等待] ACK");
     await waitChar(serial, [ACK]);
     log("[等待] 字符C");
-    await waitChar(serial, [CRC16]);
+    await waitChar(serial, [ASCII_C]);
     log("开始传输数据包...");
     for (let i = 0; i < packets.length; i++) {
         const packet = packets[i];
@@ -156,7 +197,7 @@ export async function transfer(
     log("[等待] ACK");
     await waitChar(serial, [ACK]);
     log("[等待] 字符C");
-    await waitChar(serial, [CRC16]);
+    await waitChar(serial, [ASCII_C]);
     log("[发送] 空数据包"); 
     // 目前仅支持发送一个文件，如果多个文件需要继续发送文件名称，而不是空数据包
     await serial.write(buildHeaderPacket('', 0));
