@@ -41,6 +41,16 @@
           "fontCharacter": "\\E001"
         }
       }
+    },
+    "configuration": {
+      "title": "ElenaWatchDevTools",
+      "properties": {
+        "ewdt.showRX": {
+          "type": "boolean",
+          "default": false,
+          "description": "是否在串口终端显示\"[12:00:00] [RX]\""
+        }
+      }
     }
   },
   "scripts": {

@@ -8,6 +8,8 @@ let serialPort: SerialPort | null = null;
 export let outputChannel: vscode.OutputChannel;
 let connectStatusBarItem: vscode.StatusBarItem;
 let sendFileStatusBarItem: vscode.StatusBarItem;
+let resetBoardStatusBarItem: vscode.StatusBarItem;
+const config = vscode.workspace.getConfiguration('ewdt');
 
 function createSerialPortWrapper(port: SerialPort): SerialPortLike {
     return {
@@ -22,6 +24,12 @@ function createSerialPortWrapper(port: SerialPort): SerialPortLike {
         },
         isOpen: port.isOpen
     };
+}
+
+function updateConfig(){
+    if(config.showRX !== undefined) {
+        SerialTerminal.set({ showRX: config.showRX });
+    }
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -47,6 +55,15 @@ export function activate(context: vscode.ExtensionContext) {
     sendFileStatusBarItem.tooltip = '使用YMODEM协议通过串口发送文件到设备';
     sendFileStatusBarItem.command = 'ewdt.serial.sendFile';
 
+    resetBoardStatusBarItem = vscode.window.createStatusBarItem(
+        vscode.StatusBarAlignment.Left,
+        102
+    );
+    resetBoardStatusBarItem.text = '$(sync) 重置开发板';
+    resetBoardStatusBarItem.tooltip = '重置开发板';
+    resetBoardStatusBarItem.command = 'ewdt.serial.resetBoard';
+    
+
     // 连接事件：修改按钮为断开
     SerialTerminal.onConnect = (onConnectSerialPort: SerialPort) => {
         connectStatusBarItem.text = '$(debug-disconnect) 断开 Elena Watch';
@@ -54,6 +71,7 @@ export function activate(context: vscode.ExtensionContext) {
         connectStatusBarItem.command = 'ewdt.serial.disconnectTerminal';
         serialPort = onConnectSerialPort; // 保存当前串口实例
         sendFileStatusBarItem.show();
+        resetBoardStatusBarItem.show();
     };
     // 断开事件：修改按钮为连接
     SerialTerminal.onDisconnect = () => {
@@ -61,6 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
         connectStatusBarItem.tooltip = '连接串口';
         connectStatusBarItem.command = 'ewdt.serial.createTerminal';
         sendFileStatusBarItem.hide();
+        resetBoardStatusBarItem.hide();
         serialPort = null; // 清除当前串口实例
     };
 
@@ -198,9 +217,31 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }
 
+    const resetBoardHandler = async () => {
+        if (!serialPort?.isOpen) {
+            vscode.window.showErrorMessage('请先连接串口！');
+            return;
+        }
+
+        // 发送重置命令
+        serialPort.set({ rts: true });
+        await new Promise(resolve => setTimeout(resolve, 100)); // 保持100ms
+        serialPort.set({ rts: false });
+        vscode.window.showInformationMessage('重置成功！');
+    }
     context.subscriptions.push(vscode.commands.registerCommand('ewdt.serial.createTerminal', createTerminalHandler));
     context.subscriptions.push(vscode.commands.registerCommand('ewdt.serial.disconnectTerminal', disconnectTerminalHandler));
     context.subscriptions.push(vscode.commands.registerCommand('ewdt.serial.sendFile', sendFileHandler));
+    context.subscriptions.push(vscode.commands.registerCommand('ewdt.serial.resetBoard', resetBoardHandler));
+
+    context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration(e => {
+        if (e.affectsConfiguration('ewdt')) {
+            updateConfig();
+            vscode.window.showInformationMessage("[EWDT] 配置已更新")
+        }
+    })
+);
 }
 
 export function deactivate() {
