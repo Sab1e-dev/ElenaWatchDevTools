@@ -115,8 +115,6 @@ export function activate(context: vscode.ExtensionContext) {
         const activeEditor = vscode.window.activeTextEditor;
         const activeFile = activeEditor?.document.uri;
 
-
-
         // 获取所有标签页文件（包括未聚焦的）
         const allTabFiles = vscode.window.tabGroups.all.flatMap(group =>
             group.tabs

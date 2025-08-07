@@ -54,6 +54,12 @@ export class SerialTerminal {
             this.printPrompt();
         });
 
+        // 物理拔出或串口关闭事件
+        this.serialPort.on('close', () => {
+            this.emitter?.fire(`\r\n\x1B[31m[INFO] 串口已物理断开或关闭\x1B[0m`);
+            this.disconnectSerialPort();
+        });
+
         // 连接成功事件
         if (SerialTerminal.onConnect) {
             SerialTerminal.onConnect(this.serialPort);
