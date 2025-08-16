@@ -50,6 +50,16 @@
           "default": "false",
           "description": "Debug Mode"
         },
+        "ewdt.defaultBaudRate": {
+          "type": "number",
+          "default": "115200",
+          "description": "Default serial baud rate"
+        },
+        "ewdt.jsStackSize": {
+          "type": "number",
+          "default": "1024",
+          "description": "JS Stack Size"
+        },
         "ewdt.terminalTXColor": {
           "type": "string",
           "default": "default",
